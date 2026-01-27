@@ -4,7 +4,9 @@ import jwt from 'jsonwebtoken'
 import generateAccessToken from "../utils/generateAccessToken.js"
 import generateRefreshToken from "../utils/generateRefreshToken.js"
 import ChatMessage from '../models/ChatMessage.js';
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 const register = async(req,res)=>{
     try{
@@ -126,46 +128,64 @@ const Chat = async(req,res)=>{
     });
 }
 
-const ChatMessages = async(req,res)=>{
+const ChatMessages = async (req, res) => {
     const { message } = req.body;
     const userId = req.user.id;
 
     if (!message) return res.status(400).json({ error: "Message is required." });
 
     try {
-        // A. Fetch last 5 messages for context
+        // 1. Fetch History from MongoDB
         const history = await ChatMessage.find({ user: userId })
             .sort({ timestamp: -1 })
             .limit(5);
 
-        // B. Reverse history to keep it chronological (oldest to newest)
-        const contextMessages = history.reverse();
+        // 2. Format history for Gemini (Role: "user" and "model")
+        // Note: Gemini uses 'parts' with 'text'
+        const chatHistory = history.reverse().flatMap(chat => [
+            { role: "user", parts: [{ text: chat.user_message }] },
+            { role: "model", parts: [{ text: chat.ai_response }] }
+        ]);
 
-        // C. Build "Memory" String (For Mock AI) or Array (For OpenAI)
-        const contextSummary = contextMessages
-            .map(m => `User: ${m.user_message} -> AI: ${m.ai_response}`)
-            .join(" | ");
+        // 3. Initialize Model with System Instruction
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash", // or "gemini-1.5-pro"
+            systemInstruction: "You are a helpful context-aware assistant." 
+        });
 
-        // D. Mock AI Logic using Context
-        const aiResponse = `Based on our previous chat (${contextMessages.length} messages remembered), you said "${message}". Here is your follow-up!`;
+        // 4. Start Chat session with history
+        const chatSession = model.startChat({
+            history: chatHistory,
+        });
 
-        // E. Save the new exchange to the Database
+        // 5. Send message and get response
+        const result = await chatSession.sendMessage(message);
+        const aiResponse = result.response.text();
+
+        // 6. Save to Database
         const newMessage = await ChatMessage.create({
             user: userId,
             user_message: message,
             ai_response: aiResponse
         });
 
+        // Optional: Create a quick summary for the response
+        const contextSummary = history.length > 0 
+            ? `Continuing conversation with ${history.length} previous messages.` 
+            : "Starting a new conversation.";
+
         res.json({
             user_message: message,
             ai_response: aiResponse,
             timestamp: newMessage.timestamp,
-            context_summary: contextSummary || "No previous context."
+            context_summary: contextSummary
         });
+
     } catch (error) {
-        res.status(500).json(error.message);
+        console.error("Gemini Error:", error);
+        res.status(500).json({ error: error.message });
     }
-}
+};
 
 const getMessage = async(req,res)=>{
     try {
@@ -186,7 +206,7 @@ const getMessage = async(req,res)=>{
 
 const getChatHistory = async(req,res)=>{
     try {
-        const userId = req.user.id; // Use the key name from your decoded token
+        const userId = req.user.id;
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.page_size) || 10;
 
