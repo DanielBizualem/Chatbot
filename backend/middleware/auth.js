@@ -22,7 +22,7 @@ const auth = async(req,res,next)=>{
     }catch(error){
         return res.json({
             success:false,
-            message:"Catch Error"
+            message:"Catch Error " +error
         })
     }
 }
