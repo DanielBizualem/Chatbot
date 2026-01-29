@@ -3,8 +3,8 @@ import mongoose from 'mongoose';
 const chatMessageSchema = new mongoose.Schema({
     user: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
+        ref: 'User',
+        required: true
     },
     user_message: { type: String, required: true },
     ai_response: { type: String, required: true },

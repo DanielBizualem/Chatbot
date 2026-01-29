@@ -67,18 +67,6 @@ const loginController = async(req,res)=>{
     }
 }
 
-const Chat = async(req,res)=>{
-    const { message } = req.body;
-    if (!message) return res.status(400).json({ error: "Message is required." });
-
-    res.json({
-        user_message: message,
-        ai_response: `AI says: Hello! (User ${req.user.user_id})`,
-        timestamp: new Date().toISOString(),
-        user_id: req.user.user_id
-    });
-}
-
 const ChatMessages = async (req, res) => {
     const { message } = req.body;
     const userId = req.user.id;
@@ -137,23 +125,6 @@ const ChatMessages = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-const getMessage = async(req,res)=>{
-    try {
-        const history = await ChatMessage.find({ user: req.user.user_id })
-            .sort({ timestamp: 1 }); // Chronological order
-
-        const formattedContext = history.map(m => ({
-            user: m.user_message,
-            ai: m.ai_response,
-            timestamp: m.timestamp
-        }));
-
-        res.json({ context: formattedContext });
-    } catch (err) {
-        res.status(500).json({ error: "Could not retrieve context." });
-    }
-}
 
 const getChatHistory = async(req,res)=>{
     try {
@@ -235,4 +206,4 @@ const refreshTokenController = async (req, res) => {
     }
 };
 
-export {registerController,loginController,Chat,ChatMessages,getMessage,getChatHistory,searchHistory,refreshTokenController}
+export {registerController,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController}
