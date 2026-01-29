@@ -5,52 +5,30 @@ import generateAccessToken from "../utils/generateAccessToken.js"
 import generateRefreshToken from "../utils/generateRefreshToken.js"
 import ChatMessage from '../models/ChatMessage.js';
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { createUser,login, refreshAccessTokenService } from "../services/UserServices.js"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-const register = async(req,res)=>{
-    try{
-        const {username,email,password} = req.body
-        if(!username||!email||!password){
-            return res.json({
-                success:false,
-                message:"Please fill all fields"
-            })
-        }
+const registerController = async (req, res) => {
+    const { username, email, password } = req.body;
 
-        const user = await User.findOne({email})
-        if(user){
-            return res.json({
-                success:false,
-                message:"Already registered"
-            })
-        }
-
-        const salt = await bcryptjs.genSalt(10)
-        const hashedPassword = await bcryptjs.hash(password,salt)
-
-        const payload = {
-            username,
-            email,
-            password:hashedPassword,
-        }
-        
-        const registerUser = new User(payload)
-        await registerUser.save()
-        return res.json({
-            success:true,
-            message:"Registered successfully"
-        })
-
-    }catch(error){
-        res.json({
-            success:false,
-            message:error.message
-        })
+    // Simple Validation
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
     }
-}
 
-const login = async(req,res)=>{
+    try {
+        const newUser = await createUser(username, email, password);
+        return res.status(201).json({
+            message: "User registered successfully",
+            user: { id: newUser._id, username: newUser.username, email: newUser.email }
+        });
+    } catch (error) {
+        return res.status(400).json({ error: error.message });
+    }
+};
+
+const loginController = async(req,res)=>{
     try{
         const {email,password} = req.body
         if(!email||!password){
@@ -59,34 +37,8 @@ const login = async(req,res)=>{
                 message:"Provide email and password"
             })
         }
-        const user = await User.findOne({email})
-        if(!user){
-            return res.json({
-                success:false,
-                message:"User not found"
-            })
-        }
 
-        const comparePassword = await bcryptjs.compare(password, user.password)
-        if(!comparePassword){
-            return res.json({
-                success:false,
-                message:"Check your password"
-            })
-        }
-        const accessToken =  await generateAccessToken(user._id)
-        const refreshToken = await generateRefreshToken(user._id)
-        
-        const updateUser = await User.findByIdAndUpdate(user?._id,{
-            last_login_date: new Date()
-        })
-
-        if (!accessToken || !refreshToken) {
-            return res.json({
-                success:false,
-                message:"Token not available"
-            })
-          }
+        const result = await login(email,password)
 
         const cookieOptions = {
             httpOnly:true,
@@ -94,20 +46,19 @@ const login = async(req,res)=>{
             sameSite:"None",
         }
 
-        res.cookie("accessToken",accessToken,cookieOptions)
-        res.cookie("refreshToken",refreshToken,cookieOptions)
+        res.cookie("accessToken",result.accessToken,cookieOptions)
+        res.cookie("refreshToken",result.refreshToken,cookieOptions)
 
-        const userWithPosts = await User.findById(user._id)
-       
-        return res.json({
-            success:true,
-            message:"Login successfully",
-            user: userWithPosts,
-            data:{
-                "accessToken":accessToken,
-                "refreshToken":refreshToken
+        return res.status(200).json({
+            success: true,
+            message: "Login successfully",
+            user: result.user,
+            data: {
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken
             }
-        })
+          });
+          
     }catch(error){
         return res.status(500).json({
             success:false,
@@ -263,5 +214,25 @@ const searchHistory = async(req,res)=>{
         res.status(500).json({ error: error.message });
     }
 }
+const refreshTokenController = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        const result = await refreshAccessTokenService(refreshToken);
+        
 
-export {register,login,Chat,ChatMessages,getMessage,getChatHistory,searchHistory}
+        res.cookie("accessToken", result.accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+        });
+
+        return res.status(200).json({
+            success: true,
+            accessToken: result.accessToken
+        });
+    } catch (error) {
+        return res.status(401).json(error.message);
+    }
+};
+
+export {registerController,loginController,Chat,ChatMessages,getMessage,getChatHistory,searchHistory,refreshTokenController}
