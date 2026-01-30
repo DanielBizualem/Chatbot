@@ -22,21 +22,41 @@ export default function Chat(){
             {/** Left bar */}
             <div className={`
                 relative min-h-screen border-r border-gray-200 bg-gray-100 text-black transition-all duration-300
-                hidden sm:flex flex-col 
+                hidden sm:flex flex-col justify-between p-6 // Added padding here instead of positioning
                 ${menu ? 'w-72' : 'w-18'} 
-                `}>
-                <img src="/menu.png" alt="" className="absolute top-6 left-6 w-5 h-5 cursor-pointer sticky" onClick={onClickHandler}/>
+            `}>
+                {/* Top Section: Now stays in the flex flow */}
+                <div className="flex flex-col gap-10"> 
+                    <img src="/menu.png" alt="" className="w-5 h-5 cursor-pointer" onClick={onClickHandler}/>
+                    
+                    <div className="flex gap-6 items-center">
+                        <img src="/edit.png" alt="" className="w-5 h-5 cursor-pointer"/>
+                        <Link href={''} className={`font-semibold ${menu?'block':'hidden'} text-sm`}>New Chat</Link>
+                    </div>
+
+                    <div className={`${menu?'block':'hidden'}`}>
+                        <p>Chats</p>
+                    </div>
+                </div>
+
+                {/* Bottom Section: justify-between will now push this to the bottom */}
+                <div className="flex gap-6 items-center">
+                      <img src="/setting.png" alt="" className="w-5 h-5 cursor-pointer"/>
+                      <p className={`${menu?'block':'hidden'}`}>Setting</p>
+                </div>
             </div>
             {/** main Chat */}
             <div className="flex flex-col flex-1">
   
                 {/** Center region */}
             <div className="flex flex-col h-screen w-full bg-white overflow-hidden">
-              <div className="flex w-full border-b border-gray-200 py-5 px-8 bg-white flex-none justify-between">
-                <p>Chat</p>
+              <div className="flex w-full border-b border-gray-200 py-5 px-8 bg-white flex-none justify-between items-center">
+                <div>
+                  <p className="font-semibold">echoChat</p>
+                </div>
                 <div className="flex gap-4">
-                  <Link href={'/login'}>Login</Link>
-                  <Link href={'/signUp'}>signUp</Link>
+                  <Link href={'/login'} className="text-gray-700 hover:text-blue-500">Login</Link>
+                  <Link href={'/signUp'} className="text-gray-700 hover:text-blue-500">signUp</Link>
                 </div>
               </div>
             
@@ -86,6 +106,8 @@ export default function Chat(){
                     </div>
                   </div>
             </div>
+
+            
             <div className="flex py-1 mb-1  justify-center">
               <h1 className="text-sm bg-gray-100 py-1 rounded-full px-6">Developed by Daniel Bizualem</h1>
             </div>

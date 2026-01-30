@@ -1,3 +1,4 @@
+import Link from "next/link"
 export default function Login(){
     return(
         <div className="flex justify-center items-center min-h-screen w-full font-sans">
@@ -14,6 +15,7 @@ export default function Login(){
                     </div>
                     <button className="bg-blue-500 text-white border px-4 py-1.5 rounded self-start cursor-pointer">Login</button>
                 </div>
+                <Link href='/signUp' className="text-sm text-gray-700 hover:text-blue-500">Create new Account</Link>
             </div>
         </div>
     )
