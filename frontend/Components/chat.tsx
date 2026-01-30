@@ -60,7 +60,7 @@ export default function Chat(){
                 </div>
               </div>
             
-              <div className="flex-1 flex flex-col min-h-0 px-5">
+              <div className="flex-1 flex flex-col min-h-0 px-5 justify-center transition-all duration-300">
                   {messages.length > 0 ? (
                     /* The trick: Remove justify-end. 
                       Instead, we use a flex-col container that allows the spacer to push content down.
@@ -79,7 +79,7 @@ export default function Chat(){
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 flex justify-center items-center">
+                    <div className="flex justify-center items-center">
                       <h1 className="text-xl font-bold text-gray-800">💫 How can I help you today?</h1>
                     </div>
                   )}
@@ -106,8 +106,6 @@ export default function Chat(){
                     </div>
                   </div>
             </div>
-
-            
             <div className="flex py-1 mb-1  justify-center">
               <h1 className="text-sm bg-gray-100 py-1 rounded-full px-6">Developed by Daniel Bizualem</h1>
             </div>
