@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useEffect, useRef } from "react"
+import Link from "next/link"
 
 export default function Chat(){
     const [menu,setMenu] = useState(false)
@@ -17,7 +18,7 @@ export default function Chat(){
       }, [messages])
 
     return(
-        <div className="flex">
+        <div className="flex font-sans">
             {/** Left bar */}
             <div className={`
                 relative min-h-screen border-r border-gray-200 bg-gray-100 text-black transition-all duration-300
@@ -29,12 +30,14 @@ export default function Chat(){
             {/** main Chat */}
             <div className="flex flex-col flex-1">
   
-  
-
                 {/** Center region */}
             <div className="flex flex-col h-screen w-full bg-white overflow-hidden">
-              <div className="w-full border-b border-gray-200 py-5 px-8 bg-white flex-none">
-                Chat
+              <div className="flex w-full border-b border-gray-200 py-5 px-8 bg-white flex-none justify-between">
+                <p>Chat</p>
+                <div className="flex gap-4">
+                  <Link href={'/login'}>Login</Link>
+                  <Link href={'/signUp'}>signUp</Link>
+                </div>
               </div>
             
               <div className="flex-1 flex flex-col min-h-0 px-5">
@@ -87,7 +90,7 @@ export default function Chat(){
               <h1 className="text-sm bg-gray-100 py-1 rounded-full px-6">Developed by Daniel Bizualem</h1>
             </div>
           </div>
-</div>
+      </div>
         </div>
     )
 }
