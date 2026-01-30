@@ -6,6 +6,9 @@ import generateRefreshToken from "../utils/generateRefreshToken.js"
 import ChatMessage from '../models/ChatMessage.js';
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { createUser,login, refreshAccessTokenService } from "../services/UserServices.js"
+import { chat } from "../services/chatService.js";
+import { historyService } from "../services/history.js";
+import { searchService } from "../services/search.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
@@ -68,82 +71,63 @@ const loginController = async(req,res)=>{
 }
 
 const ChatMessages = async (req, res) => {
-    const { message } = req.body;
-    const userId = req.user.id;
+    try{
+        const { message } = req.body;
+        const userId = req.user.id;
 
-    if (!message) return res.status(400).json({ error: "Message is required." });
+        if (!message) {
+            return res.status(400).json({ 
+                success: false, 
+                error: "Message is required." 
+            });
+        }
 
-    try {
-        // 1. Fetch History from MongoDB
-        const history = await ChatMessage.find({ user: userId })
-            .sort({ timestamp: -1 })
-            .limit(5);
+        const chatData = await chat(message,userId)
 
-        // 2. Format history for Gemini (Role: "user" and "model")
-        // Note: Gemini uses 'parts' with 'text'
-        const chatHistory = history.reverse().flatMap(chat => [
-            { role: "user", parts: [{ text: chat.user_message }] },
-            { role: "model", parts: [{ text: chat.ai_response }] }
-        ]);
+        if (!chatData) {
+            throw new Error("Service failed to return chat data");
+        }
 
-        // 3. Initialize Model with System Instruction
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-2.5-flash", // or "gemini-1.5-pro"
-            systemInstruction: "You are a helpful context-aware assistant." 
-        });
+        const contextSummary = chatData.historyCount > 0 
+                ? `Continuing conversation with ${chatData.historyCount} previous messages.` 
+                : "Starting a new conversation.";
 
-        // 4. Start Chat session with history
-        const chatSession = model.startChat({
-            history: chatHistory,
-        });
-
-        // 5. Send message and get response
-        const result = await chatSession.sendMessage(message);
-        const aiResponse = result.response.text();
-
-        // 6. Save to Database
-        const newMessage = await ChatMessage.create({
-            user: userId,
-            user_message: message,
-            ai_response: aiResponse
-        });
-
-        // Optional: Create a quick summary for the response
-        const contextSummary = history.length > 0 
-            ? `Continuing conversation with ${history.length} previous messages.` 
-            : "Starting a new conversation.";
-
-        res.json({
-            user_message: message,
-            ai_response: aiResponse,
-            timestamp: newMessage.timestamp,
-            context_summary: contextSummary
-        });
-
-    } catch (error) {
-        console.error("Gemini Error:", error);
-        res.status(500).json({ error: error.message });
+            return res.status(200).json({
+                success: true,
+                user_message: chatData.user_message,
+                ai_response: chatData.ai_response,
+                timestamp: chatData.timestamp,
+                context_summary: contextSummary
+            });
+    }catch(error){
+        console.error(error); 
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error"
+        })
     }
+    
 };
 
 const getChatHistory = async(req,res)=>{
     try {
         const userId = req.user.id;
+
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.page_size) || 10;
+        const pageSize = parseInt(req.query.page_size) || 10
 
-        const totalMessages = await ChatMessage.countDocuments({ user: userId });
-        const history = await ChatMessage.find({ user: userId })
-            .sort({ timestamp: -1 }) // Newest first
-            .skip((page - 1) * pageSize)
-            .limit(pageSize);
+        const historyMessage = await historyService(userId,page,pageSize)
 
-        res.json({
-            history: history.reverse(), // Reverse to show chronological for the UI
-            total_pages: Math.ceil(totalMessages / pageSize),
-            current_page: page,
-            total_messages: totalMessages
-        });
+        if(!historyMessage){
+            throw new Error("I can't get your chat history")
+        }
+        return res.status(200).json({
+            success:true,
+            message:historyMessage.history,
+            totalPage:historyMessage.total_pages,
+            currentPage: historyMessage.current_page,
+            totalMessage: historyMessage.total_messages
+        })
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -153,33 +137,15 @@ const searchHistory = async(req,res)=>{
     try {
         const userId = req.user.id;
         const { query, type } = req.query;
-
         if (!query) {
             return res.status(400).json({ error: "Query parameter is required." });
         }
-
-        // Build a flexible search filter
-        let searchFilter = { user: userId };
-        const regex = new RegExp(query, 'i'); // 'i' means case-insensitive
-
-        if (type === 'user') {
-            searchFilter.user_message = regex;
-        } else if (type === 'ai') {
-            searchFilter.ai_response = regex;
-        } else {
-            // Default: Search both fields
-            searchFilter.$or = [
-                { user_message: regex },
-                { ai_response: regex }
-            ];
-        }
-
-        const matches = await ChatMessage.find(searchFilter).sort({ timestamp: -1 });
-
+        const searchResult = await searchService(userId,query,type)
+        
         res.json({
-            matches,
-            contains: matches.length > 0,
-            count: matches.length
+            Matches:searchResult.matches,
+            Contains:searchResult.contains,
+            Count:searchResult.count
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

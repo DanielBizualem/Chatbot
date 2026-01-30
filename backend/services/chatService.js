@@ -4,7 +4,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export const chat = async(message,userId)=>{
     if (!message) throw new Error("Message is required!");
-
     try {
         // 1. Fetch History from MongoDB
         const history = await ChatMessage.find({ user: userId })
@@ -40,11 +39,14 @@ export const chat = async(message,userId)=>{
             ai_response: aiResponse
         });
 
-        // Optional: Create a quick summary for the response
-        const contextSummary = history.length > 0 
-            ? `Continuing conversation with ${history.length} previous messages.` 
-            : "Starting a new conversation.";
+        return {
+            user_message: message,
+            ai_response: aiResponse,
+            timestamp: newMessage.timestamp,
+            historyCount: history.length
+        };
+
     }catch(error){
-        throw Error()
+        throw error
     }
 }
