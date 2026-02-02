@@ -9,6 +9,7 @@ import { createUser,login, refreshAccessTokenService } from "../services/UserSer
 import { chat } from "../services/chatService.js";
 import { historyService } from "../services/history.js";
 import { searchService } from "../services/search.js";
+import userDetails from "../services/userDetail.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
@@ -172,4 +173,17 @@ const refreshTokenController = async (req, res) => {
     }
 };
 
-export {registerController,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController}
+const userDetail = async(req,res)=>{
+    try{
+        const userId = req.user.id
+        const result = await userDetails(userId)
+        return res.json({
+            success:true,
+            data:result
+        })
+    }catch(error){
+        return res.json(error.message)
+    }
+}
+
+export {registerController,userDetail,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController}

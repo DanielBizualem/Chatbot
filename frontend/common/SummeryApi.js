@@ -13,6 +13,18 @@ const summeryApi = {
         url: '/api/chatbot/chatMessage',
         method: "post"
     },
+    searchResult:{
+        url: '/api/chatbot/searchHistory',
+        method:"get"
+    },
+    history:{
+        url: '/api/chatbot/history',
+        method:"get"
+    },
+    userDetail:{
+        url:'api/chatbot/userDetail',
+        method:"get"
+    }
     
 }
 
