@@ -10,6 +10,7 @@ import { chat } from "../services/chatService.js";
 import { historyService } from "../services/history.js";
 import { searchService } from "../services/search.js";
 import userDetails from "../services/userDetail.js";
+import uploadAvatar from "../services/uploadAvatar.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
@@ -186,4 +187,16 @@ const userDetail = async(req,res)=>{
     }
 }
 
-export {registerController,userDetail,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController}
+const avatarController = async(req,res)=>{
+    const userId = req.user.id
+    const image = req.file
+    const result = await uploadAvatar(userId,image)
+    console.log(result)
+    return res.json({
+        success:true,
+        message:"uploaded successfully",
+        data:result
+    })
+}
+
+export {registerController,userDetail,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController,avatarController}
