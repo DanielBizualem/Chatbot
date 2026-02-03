@@ -4,9 +4,15 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './config/db.js'
 import userRouter from './router/userRoute.js'
+import {v2 as cloudinary} from 'cloudinary'
 
 const app = express()
 const PORT = 4000
+
+cloudinary.config({
+    cloud_name:process.env.cloud_name,
+    secure:true
+})
 
 app.use(express.json())
 app.use(cors({
