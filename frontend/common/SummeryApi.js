@@ -24,6 +24,10 @@ const summeryApi = {
     userDetail:{
         url:'api/chatbot/userDetail',
         method:"get"
+    },
+    avatar:{
+        url:'api/chatbot/uploadAvatar',
+        method:"post"
     }
     
 }

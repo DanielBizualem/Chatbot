@@ -70,15 +70,15 @@ export default function Chat() {
                 <div className="flex flex-col h-screen w-full bg-white overflow-hidden">
                     <div className="flex w-full border-b border-gray-200 py-5 px-8 bg-white flex-none justify-between items-center">
                         <div>
-                            <p className="font-semibold">echoChat</p>
+                            <p className="text-lg font-bold text-blue-500">echoChat</p>
                         </div>
                         {
                             user?
                             <p>{user.username}</p>
                             :
                             <div className="flex gap-4">
-                            <Link href={'/login'} className="text-gray-700 hover:text-blue-500">Login</Link>
-                            <Link href={'/signUp'} className="text-gray-700 hover:text-blue-500">signUp</Link>
+                            <Link href={'/login'} className="text-gray-700 border border-gray-500 rounded px-4 py-1 hover:bg-gray-100">Login</Link>
+                            <Link href={'/signUp'} className="text-white hover:bg-blue-600 bg-blue-500 rounded px-4 py-1">signUp</Link>
                         </div>
                         }
                     </div>

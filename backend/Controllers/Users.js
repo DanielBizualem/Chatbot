@@ -5,7 +5,7 @@ import generateAccessToken from "../utils/generateAccessToken.js"
 import generateRefreshToken from "../utils/generateRefreshToken.js"
 import ChatMessage from '../models/ChatMessage.js';
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { createUser,login, refreshAccessTokenService } from "../services/UserServices.js"
+import { createUser,login, logout, refreshAccessTokenService } from "../services/UserServices.js"
 import { chat } from "../services/chatService.js";
 import { historyService } from "../services/history.js";
 import { searchService } from "../services/search.js";
@@ -16,6 +16,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 const registerController = async (req, res) => {
     const { username, email, password } = req.body;
+    const avatar = req.file
 
     // Simple Validation
     if (!username || !email || !password) {
@@ -23,10 +24,10 @@ const registerController = async (req, res) => {
     }
 
     try {
-        const newUser = await createUser(username, email, password);
+        const newUser = await createUser(username, email, password,avatar);
         return res.status(201).json({
             message: "User registered successfully",
-            user: { id: newUser._id, username: newUser.username, email: newUser.email }
+            user: { id: newUser._id, username: newUser.username, email: newUser.email,avatar:newUser.avatar }
         });
     } catch (error) {
         return res.status(400).json({ error: error.message });
@@ -199,4 +200,32 @@ const avatarController = async(req,res)=>{
     })
 }
 
-export {registerController,userDetail,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController,avatarController}
+const logoutController = async(req,res)=>{
+    try{
+        const userId = req.user.id
+
+        const cookieOptions  ={
+            httpOnly:true,
+            secure:true,
+            sameSite:"None"
+        }
+        res.clearCookie("accessToken",cookieOptions)
+        res.clearCookie("refreshToken",cookieOptions)
+
+        const result = await logout(userId)
+
+        if(result){
+            return res.json({
+                success:true,
+                message:"Logged out successfully"
+            })
+        }
+    }catch(error){
+        return res.json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+export {registerController,logoutController,userDetail,loginController,ChatMessages,getChatHistory,searchHistory,refreshTokenController,avatarController}

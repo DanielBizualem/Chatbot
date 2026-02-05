@@ -4,7 +4,7 @@ import generateAccessToken from "../utils/generateAccessToken.js";
 import generateRefreshToken from "../utils/generateRefreshToken.js";
 import jwt from 'jsonwebtoken'
 
-export const createUser = async (username, email, password) => {
+export const createUser = async (username, email, password,avatar) => {
     // 1. Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) throw new Error("User already exists");
@@ -14,7 +14,7 @@ export const createUser = async (username, email, password) => {
     const hashedPassword = await bcryptjs.hash(password, salt);
 
     // 3. Save to DB
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({ username, email,avatar, password: hashedPassword });
     await newUser.save();
 
     return newUser;
@@ -48,6 +48,14 @@ export const login = async(email,password)=>{
    }catch(error){
         throw error
    }
+}
+
+export const logout = async(userId)=>{
+
+    const updateUser = await User.findByIdAndUpdate(userId,{
+        refresh_token:""
+    })
+    return updateUser
 }
 
 export const refreshAccessTokenService = async (refreshToken) => {
