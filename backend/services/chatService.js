@@ -50,3 +50,4 @@ export const chat = async(message,userId)=>{
         throw error
     }
 }
+

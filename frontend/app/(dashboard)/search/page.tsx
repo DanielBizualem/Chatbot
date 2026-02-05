@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import Axios from "@/utils/Axios";
 import summeryApi from "@/common/SummeryApi";
+import Link from "next/link";
 
 export default function SearchRecent() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -43,8 +44,10 @@ export default function SearchRecent() {
     return (
         <div className="flex w-full justify-center mt-10 p-4">
             <div className="flex flex-col w-full max-w-2xl gap-4">
-                <p className="text-2xl font-semibold font-sans">Search</p>
-                
+                <div className="flex justify-between">
+                    <p className="text-2xl font-semibold font-sans">Search</p>
+                    <Link href="/chat"><img src="/close.png" alt="" className="w-4 h-4"/></Link>
+                </div>
                 <div className="flex relative">
                     <input 
                         type="text" 

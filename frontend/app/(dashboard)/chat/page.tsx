@@ -1,11 +1,13 @@
 "use client"
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
 import Axios from "@/utils/Axios"
 import summeryApi from "@/common/SummeryApi"
 
 
-export default function InputArea(){
+export default function Chat() {
     const [messages, setMessages] = useState<any[]>([])
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -19,6 +21,7 @@ export default function InputArea(){
                 ...summeryApi.chatMessage,
                 data: { message: userPrompt }
             });
+
 
             const aiText = response.data.ai_response;
 
@@ -36,12 +39,12 @@ export default function InputArea(){
         }
     };
 
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages])
-
     
-    return(
+    return (
         <div className="flex-1 flex flex-col min-h-0 px-5 justify-center transition-all duration-300">
                         {messages.length > 0 ? (
                             <div className="flex-1 overflow-y-auto w-full max-w-xl mx-auto p-4 custom-scrollbar [scrollbar-width:none]">

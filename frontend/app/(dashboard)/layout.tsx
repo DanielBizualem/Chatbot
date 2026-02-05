@@ -1,33 +1,28 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import InputArea from "./inputArea"
-import SearchRecent from "./searchRecent"
-import Axios from "@/utils/Axios"
-import summeryApi from "@/common/SummeryApi"
-import fetchUserDetail from '../utils/fetchUserDetails'
+import fetchUserDetail from '../../utils/fetchUserDetails'
 
 
 
-export default function Chat() {
+export default function layout({children}:{children:React.ReactNode}) {
     const [menu, setMenu] = useState(false)
-    const [state,setState] = useState(false)
+    
     const [user,setUser] = useState({
         username:"",
         email:"",
         password:""
     })
-    
-    const onClickRefresh = ()=>{
-        window.location.reload()
-    }
+
     const onClickHandler = () => {
         setMenu(!menu)
     }
-    const onClickState = ()=>{
-        setState(!state)
-    }
     
+
+    const onClickRefresh = ()=>{
+        window.location.reload()
+    }
+
     const userDetail = async()=>{
         const userData = await fetchUserDetail()
         setUser(userData.data)
@@ -37,7 +32,6 @@ export default function Chat() {
         userDetail()
     },[])
 
-    
     return (
         <div className="flex font-sans">
             {/** Left bar */}
@@ -49,7 +43,7 @@ export default function Chat() {
                 <div className="flex flex-col gap-10">
                     <div className="flex gap-4 w-full justify-between">
                         <img src="/menu.png" alt="" className="w-5 h-5 cursor-pointer" onClick={onClickHandler} />
-                        <img src="/search.png" alt="" className={`w-5 h-5 cursor-pointer ${menu?'':'hidden'}`} onClick={onClickState}/>
+                        <Link href='/search'><img src="/search.png" alt="" className={`w-5 h-5 cursor-pointer ${menu?'':'hidden'}`} /></Link>
                     </div>
                     <div className="flex gap-6 items-center">
                         <img src="/edit.png" alt="" className="w-5 h-5 cursor-pointer" onClick={onClickRefresh}/>
@@ -82,11 +76,8 @@ export default function Chat() {
                         </div>
                         }
                     </div>
-                    {
-                        state?<SearchRecent/>:<InputArea/>
-                    }
-                    
-                    <div className={`flex py-1 mb-1 justify-center ${state?'hidden':''}`}>
+                     {children}
+                    <div className={`flex py-1 mb-1 justify-center`}>
                         <h1 className="text-[13px] text-gray-500 bg-gray-100 py-1 rounded-full px-6">Developed by Daniel Bizualem</h1>
                     </div>
                 </div>

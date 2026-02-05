@@ -4,7 +4,7 @@ import Practise from "@/Components/practise";
 export default function Home(){
   return (
     <div>
-      <Chat/>
+      
     </div>
   )
 }

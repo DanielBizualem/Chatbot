@@ -28,8 +28,12 @@ const summeryApi = {
     avatar:{
         url:'api/chatbot/uploadAvatar',
         method:"post"
-    }
-    
+    },
+
+    chatHistory:{
+        url:'api/chatbot/history',
+        method:"get"
+    },
 }
 
 export default summeryApi

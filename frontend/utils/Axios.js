@@ -6,6 +6,39 @@ const Axios = axios.create({
     withCredentials:true
 })
 
+Axios.interceptors.request.use(
+    async(config)=>{
+        const accessToken = localStorage.getItem('accessToken')
+        if(accessToken){
+            config.headers.authorization = `Bearer ${accessToken}`
+        }
+        return config
+    },
+    (error)=>{
+        return Promise.reject(error)
+    }
+)
+
+Axios.interceptors.response.use(
+    (response)=>{
+        return response
+    },
+    async(error)=>{
+        let originRequest = error.config
+        if(error.response.status===401 && !originRequest.retry){
+            originRequest.retry = true
+            const refreshToken = localStorage.getItem('refreshToken')
+            if(refreshToken){
+                const newAccessToken = await refreshAccessToken(refreshToken)
+                if(newAccessToken){
+                    return Axios(originRequest)
+                }
+            }
+        }
+        return Promise.reject(error)
+    }
+)
+
 const refreshAccessToken = async(refreshToken)=>{
     try{
         const response = await Axios({
