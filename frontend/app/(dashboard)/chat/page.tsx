@@ -7,7 +7,7 @@ import summeryApi from "@/common/SummeryApi"
 
 export default function Chat() {
     const [messages, setMessages] = useState<any[]>([])
-    const [isHistoryLoading, setIsHistoryLoading] = useState(false)
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
     const [loading, setLoading] = useState(false)
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -43,6 +43,36 @@ export default function Chat() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages])
+
+    const getChatHistory = async () => {
+        if (messages.length > 0) return;
+
+        try {
+            setIsHistoryLoading(true);
+            const response = await Axios({ ...summeryApi.chatHistory });
+
+            if (response.data.success) {
+                const rawHistory = response.data.message || [];
+
+                // Use flatMap to separate the User message and AI response 
+                // into their own individual chat bubbles
+                const formatted = rawHistory.flatMap((chat: any) => [
+                    { text: chat.user_message, sender: 'user' },
+                    { text: chat.ai_response, sender: 'bot' }
+                ]);
+
+                setMessages(formatted);
+            }
+        } catch (error) {
+            console.error("Error loading chat history:", error);
+        } finally {
+            setIsHistoryLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getChatHistory();
+    }, []);
     
     return (
         <div className="flex-1 flex flex-col min-h-0 px-5 justify-center transition-all duration-300">
@@ -51,11 +81,11 @@ export default function Chat() {
                                 <div className="flex flex-col justify-end min-h-full">
                                     <div className="space-y-4">
                                         {messages.map((msg, i) => (
-                                            <div 
-                                                key={i} 
+                                            <div
+                                                key={i}
                                                 className={`p-3 rounded-lg w-fit max-w-[80%] ${
-                                                    msg.sender === 'bot' 
-                                                    ? "bg-gray-100 text-black mr-auto" 
+                                                    msg.sender === 'bot'
+                                                    ? "bg-gray-100 text-black mr-auto"
                                                     : "bg-blue-500 text-white ml-auto"
                                                 }`}
                                             >

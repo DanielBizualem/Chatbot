@@ -1,10 +1,9 @@
-import Chat from "@/Components/chat";
-import Practise from "@/Components/practise";
+import Recent from "@/Components/recent";
 
 export default function Home(){
   return (
     <div>
-      
+      <Recent/>
     </div>
   )
 }

@@ -46,11 +46,11 @@ export default function SearchRecent() {
             <div className="flex flex-col w-full max-w-2xl gap-4">
                 <div className="flex justify-between">
                     <p className="text-2xl font-semibold font-sans">Search</p>
-                    <Link href="/chat"><img src="/close.png" alt="" className="w-4 h-4"/></Link>
+                    <Link href="/chat"><img src="/back.png" alt="" className="w-6 h-6"/></Link>
                 </div>
                 <div className="flex relative">
                     <input 
-                        type="text" 
+                        type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="flex flex-1 px-10 py-2 rounded-full border border-gray-400 outline-none focus:border-blue-400 bg-gray-50 focus:bg-white transition-all" 

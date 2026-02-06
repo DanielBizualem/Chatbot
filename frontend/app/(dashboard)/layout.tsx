@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import fetchUserDetail from '../../utils/fetchUserDetails'
+import Recent from "@/Components/recent"
 
 
 
@@ -36,7 +37,7 @@ export default function layout({children}:{children:React.ReactNode}) {
         <div className="flex font-sans">
             {/** Left bar */}
             <div className={`
-                relative min-h-screen border-r border-gray-200 bg-gray-100 text-black transition-all duration-300
+                relative min-h-screen border-r border-gray-200 bg-blue-50 text-black transition-all duration-300
                 hidden sm:flex flex-col justify-between p-6 
                 ${menu ? 'w-72' : 'w-18'}
             `}>
@@ -50,7 +51,8 @@ export default function layout({children}:{children:React.ReactNode}) {
                         <Link href={''} className={`font-semibold ${menu ? 'block' : 'hidden'} text-sm`} onClick={onClickRefresh}>New Chat</Link>
                     </div>
                     <div className={`${menu ? 'block' : 'hidden'}`}>
-                        <p>Chats</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Chats</p>
+                        <Recent/>
                     </div>
                 </div>
                 <div className="flex gap-6 items-center">
